@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { addHistoryEntry } from '../storage/storage';
 import Clock from '../components/Clock';
 import TagPicker from '../components/TagPicker';
+import CircularProgress from '../components/CircularProgress';
 
 function formatDuration(totalSeconds) {
   const h = Math.floor(totalSeconds / 3600);
@@ -64,9 +65,13 @@ export default function TimerScreen() {
         <TagPicker selected={tag} onSelect={setTag} />
       </View>
 
-      <Text style={[styles.timerText, { color: theme.text }]}>
-        {formatDuration(seconds)}
-      </Text>
+      <View style={styles.ringWrapper}>
+        <CircularProgress progress={(seconds % 60) / 60}>
+          <Text style={[styles.timerText, { color: theme.text }]}>
+            {formatDuration(seconds)}
+          </Text>
+        </CircularProgress>
+      </View>
 
       <View style={styles.controls}>
         <TouchableOpacity
@@ -106,11 +111,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
   },
+  ringWrapper: {
+    marginBottom: 40,
+  },
   timerText: {
-    fontSize: 72,
+    fontSize: 56,
     fontWeight: '200',
     fontVariant: ['tabular-nums'],
-    marginBottom: 48,
   },
   controls: {
     flexDirection: 'row',
