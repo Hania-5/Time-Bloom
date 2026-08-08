@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../context/ThemeContext';
 import { addHistoryEntry } from '../storage/storage';
 import Clock from '../components/Clock';
+import TagPicker from '../components/TagPicker';
 
 function formatDuration(totalSeconds) {
   const h = Math.floor(totalSeconds / 3600);
@@ -18,6 +19,7 @@ export default function TimerScreen() {
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [label, setLabel] = useState('');
+  const [tag, setTag] = useState(null);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function TimerScreen() {
     if (seconds > 0) {
       await addHistoryEntry({
         label: label.trim() || 'Untitled session',
+        tag,
         durationSeconds: seconds,
         date: new Date().toISOString(),
       });
@@ -42,6 +45,7 @@ export default function TimerScreen() {
     setRunning(false);
     setSeconds(0);
     setLabel('');
+    setTag(null);
   };
 
   return (
@@ -49,13 +53,16 @@ export default function TimerScreen() {
       <StatusBar style="light" />
       <Clock corner="top-right" />
 
-      <TextInput
-        style={[styles.labelInput, { color: theme.muted }]}
-        placeholder="What are you working on?"
-        placeholderTextColor={theme.muted}
-        value={label}
-        onChangeText={setLabel}
-      />
+      <View style={styles.topSection}>
+        <TextInput
+          style={[styles.labelInput, { color: theme.muted }]}
+          placeholder="What are you working on?"
+          placeholderTextColor={theme.muted}
+          value={label}
+          onChangeText={setLabel}
+        />
+        <TagPicker selected={tag} onSelect={setTag} />
+      </View>
 
       <Text style={[styles.timerText, { color: theme.text }]}>
         {formatDuration(seconds)}
@@ -89,12 +96,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  labelInput: {
+  topSection: {
     position: 'absolute',
-    top: 80,
+    top: 70,
+    width: '100%',
+  },
+  labelInput: {
     fontSize: 16,
     textAlign: 'center',
-    width: '80%',
+    marginBottom: 16,
   },
   timerText: {
     fontSize: 72,

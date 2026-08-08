@@ -39,7 +39,32 @@ export async function addHistoryEntry(entry) {
 export async function clearHistory() {
   await setItem(HISTORY_KEY, []);
 }
+// Aggregates history into the last 7 days' total minutes, oldest to newest.
+// Returns [{ label: 'Mon', minutes: 42, dateKey: '2026-08-02' }, ...]
+export async function getWeeklyTotals() {
+  const history = await getHistory();
+  const days = [];
+  const today = new Date();
 
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateKey = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    const label = d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2);
+    days.push({ dateKey, label, minutes: 0 });
+  }
+
+  const dayMap = Object.fromEntries(days.map((d) => [d.dateKey, d]));
+
+  for (const session of history) {
+    const dateKey = session.date?.slice(0, 10);
+    if (dayMap[dateKey]) {
+      dayMap[dateKey].minutes += Math.round(session.durationSeconds / 60);
+    }
+  }
+
+  return days;
+} 
 // --- Notes ---
 const NOTES_KEY = 'timebloom_notes';
 
